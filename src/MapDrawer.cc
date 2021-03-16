@@ -23,7 +23,7 @@
 #include "KeyFrame.h"
 #include <pangolin/pangolin.h>
 #include <mutex>
-
+#include <random>
 namespace ORB_SLAM2
 {
 
@@ -127,7 +127,7 @@ void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph)
             glPopMatrix();
         }
     }
-
+    std::default_random_engine  e;
     if(bDrawGraph)
     {
         glLineWidth(mGraphLineWidth);
@@ -136,6 +136,7 @@ void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph)
 
         for(size_t i=0; i<vpKFs.size(); i++)
         {
+
             // Covisibility Graph
             const vector<KeyFrame*> vCovKFs = vpKFs[i]->GetCovisiblesByWeight(100);
             cv::Mat Ow = vpKFs[i]->GetCameraCenter();
@@ -150,16 +151,18 @@ void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph)
                     glVertex3f(Ow2.at<float>(0),Ow2.at<float>(1),Ow2.at<float>(2));
                 }
             }
-
+         
             // Spanning tree
             KeyFrame* pParent = vpKFs[i]->GetParent();
             if(pParent)
             {
+                std::uniform_real_distribution<float> ran(0,1);
+                glColor4f(ran(e),ran(e),ran(e),0.6f);
                 cv::Mat Owp = pParent->GetCameraCenter();
                 glVertex3f(Ow.at<float>(0),Ow.at<float>(1),Ow.at<float>(2));
                 glVertex3f(Owp.at<float>(0),Owp.at<float>(1),Owp.at<float>(2));
             }
-
+            glColor4f(0.0f,1.0f,0.0f,0.6f);
             // Loops
             set<KeyFrame*> sLoopKFs = vpKFs[i]->GetLoopEdges();
             for(set<KeyFrame*>::iterator sit=sLoopKFs.begin(), send=sLoopKFs.end(); sit!=send; sit++)
